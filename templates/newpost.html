@@ -7,12 +7,12 @@
     <form method='post'>
         <label>
             Title for your new Blog:
-            <input type="text" name='title' />
+            <input type="text" name='title' value='{{title}}' />
         </label>
 
         <label>
             Your New Blog:
-            <textarea name='body' rows="10" cols="30"/></textarea>
+            <textarea name='body' rows="10" cols="30"/>{{blog}}</textarea>
         </label>
         <div class="error">{{error}} </div>
         <input type="submit" value='Add Entry' />

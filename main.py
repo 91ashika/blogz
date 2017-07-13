@@ -40,7 +40,7 @@ def newpost():
         blog = request.form['body']
         if not title or not blog:   #validate the fields
             error = "Fill both the fields."
-            return render_template("newpost.html",error=error)
+            return render_template("newpost.html",error=error, title=title, blog=blog)
         new_blog = Blog(title,blog)
         db.session.add(new_blog)
         db.session.commit()
