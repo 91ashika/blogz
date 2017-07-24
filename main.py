@@ -1,6 +1,6 @@
 from flask import Flask, request, redirect, render_template,session,flash
 from flask_sqlalchemy import SQLAlchemy
-from helpers import validate_password,validate_user,verify_passwords, validate_email
+from helpers import validate_password,verify_passwords
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -32,11 +32,22 @@ class Blog(db.Model):
         self.body = body
         self.owner = owner
 
-
+def validate_user(username):
+    if not username:
+        return "That's not a valid username"
+    else:
+        if len(username)<3 or len(username)>20 or " " in username :
+            return "That's not a valid username"
+        else:
+            user = User.query.filter_by(username=username).first()
+            if user:
+                return "The username already exists."
+            else:
+                return ""
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'signup','blog']
+    allowed_routes = ['login', 'signup','blog','index']
     if request.endpoint not in allowed_routes and 'user' not in session:
         return redirect('/login')
 
@@ -44,15 +55,24 @@ def require_login():
 @app.route('/blog', methods=['GET'])
 def blog(): 
     if len(request.args) != 0:      #check if there is any arguments in the request
-        id = request.args.get('id')
+        if request.args.get('id'):
+            id = request.args.get('id')
 
-        blog = Blog.query.get(id)
+            blog = Blog.query.get(id)
+            user = User.query.filter_by(id= blog.owner_id).first()
 
-        return render_template('blog.html',blogs=blog, mainpage=False) #mainpage variable to know what format the page should be displayed     
+            return render_template('blog.html',blogs=blog,users= user, mainpage=False) #mainpage variable to know what format the page should be displayed     
         
+        elif request.args.get('user'):
+            user = request.args.get('user')
+            user_db = User.query.filter_by(username=user).first()
+            user_id = user_db.id
+            blogs = Blog.query.filter_by(owner_id=user_id).all()
+            return render_template('blog.html',blogs=blogs,users=user_db, mainpage=True)
+
     blogs = Blog.query.all()  # if the blog mainpage is loaded, display all the blogs from the db
-    
-    return render_template('blog.html',blogs=blogs,mainpage=True)
+    users = User.query.all()
+    return render_template('blog.html',blogs=blogs,users=users,mainpage=True)
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def newpost():
@@ -99,19 +119,19 @@ def signup():
         user_error= validate_user(user)
         pwd= request.form['password']
         pwd_error= validate_password(pwd)
-        email= request.form['email']
-        email_error = validate_email(email)
+        
+        
         verify_pwd=request.form['verify_password']
         verify_pwd_error= verify_passwords(pwd,verify_pwd)
-        if not user_error and not verify_pwd_error and not pwd_error and not email_error:
-            #return render_template("welcome.html",user=user)
+        if not user_error and not verify_pwd_error and not pwd_error:
+            
             new_user = User(user,pwd)
             db.session.add(new_user)
             db.session.commit()
             session['user']= user
             return redirect("/newpost")
         
-        return render_template("signup.html", usererror=user_error,verify_pwd_error=verify_pwd_error, pwd_error= pwd_error, email_error=email_error, username=user, email=email)
+        return render_template("signup.html", usererror=user_error,verify_pwd_error=verify_pwd_error, pwd_error= pwd_error, username=user)
 
 @app.route('/logout')
 def logout():
@@ -121,8 +141,8 @@ def logout():
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-
-    return redirect("/blog")
+    users = User.query.all()
+    return render_template("index.html",users=users)
 
 if __name__ == '__main__':
     app.run()

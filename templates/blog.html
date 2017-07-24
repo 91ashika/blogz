@@ -3,10 +3,10 @@
 {% block content %}
 
     {% if mainpage %}
-        <h1>Build A Blog</h1>
+        <h1>Blog Posts!</h1>
 
         {% if blogs|length == 0 %}
-            <p>No Blogs yet</p>
+            <p>No Blogs yet!</p>
         {% else %}
 
         
@@ -14,6 +14,15 @@
                 <article>
                     <h3><a href="/blog?id={{blog.id}}">{{blog.title}}</a></h3>
                     <p>{{blog.body}}</p>
+                    {%if users is iterable%}
+                        {% for user in users %}
+                            {% if user.id == blog.owner_id %}
+                                <div class='author'>written by <a href="/blog?user={{user.username}}">{{user.username}} </a></div>
+                            {%endif%}    
+                        {% endfor%}
+                    {% else %}
+                        <div class='author'>written by <a href="/blog?user={{users.username}}">{{users.username}} </a></div>
+                    {%endif%}    
                 </article>  
                 <hr/>
             {% endfor %}
@@ -23,5 +32,6 @@
     {% else %}
         <h1>{{blogs.title}}</h1>
         <p>{{blogs.body}}</p>
+        <div class='author'>written by <a href="/blog?user={{users.username}}">{{users.username}}</a></div>
     {% endif %}   
 {% endblock %}

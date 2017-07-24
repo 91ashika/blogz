@@ -1,11 +1,3 @@
-def validate_user(username):
-    if not username:
-        return "That's not a valid username"
-    else:
-        if len(username)<3 or len(username)>20 or " " in username :
-            return "That's not a valid username"
-        return ""
-
 
 def validate_password(password):
 
@@ -14,15 +6,14 @@ def validate_password(password):
     else:
         if len(password)<3 or len(password)>20 or " " in password :
             return "That's not a valid password"
-
         else:
-            return ""    
+            return ""
 
 def verify_passwords(password,verify_pwd):
     if password != verify_pwd:
         return "The passwords dont match"
     else:
-        return "" 
+        return ""
 
 def validate_email(email):
     if not email:
