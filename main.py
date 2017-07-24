@@ -1,6 +1,7 @@
 from flask import Flask, request, redirect, render_template,session,flash
 from flask_sqlalchemy import SQLAlchemy
 from helpers import validate_password,verify_passwords
+from hashutils import check_pw_hash,make_pw_hash,make_salt
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -99,7 +100,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
+        if user and  check_pw_hash(password,user.password):
             session['user'] = username
             flash("Logged in")
             return redirect('/newpost')
@@ -122,8 +123,8 @@ def signup():
         verify_pwd_error= verify_passwords(pwd,verify_pwd)
         
         if not user_error and not verify_pwd_error and not pwd_error:
-            
-            new_user = User(user,pwd)
+            pwd_hash = make_pw_hash(pwd)
+            new_user = User(user,pwd_hash)
             db.session.add(new_user)
             db.session.commit()
             session['user']= user
