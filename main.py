@@ -59,20 +59,19 @@ def blog():
             id = request.args.get('id')
 
             blog = Blog.query.get(id)
-            user = User.query.filter_by(id= blog.owner_id).first()
-
-            return render_template('blog.html',blogs=blog,users= user, mainpage=False) #mainpage variable to know what format the page should be displayed     
+            
+            return render_template('singleblog.html',blog=blog) #render individual blog post    
         
-        elif request.args.get('user'):
+        elif request.args.get('user'):          #to check if the user value exists
             user = request.args.get('user')
             user_db = User.query.filter_by(username=user).first()
             user_id = user_db.id
             blogs = Blog.query.filter_by(owner_id=user_id).all()
-            return render_template('blog.html',blogs=blogs,users=user_db, mainpage=True)
+            return render_template('singleUser.html',blogs=blogs)
 
     blogs = Blog.query.all()  # if the blog mainpage is loaded, display all the blogs from the db
     users = User.query.all()
-    return render_template('blog.html',blogs=blogs,users=users,mainpage=True)
+    return render_template('blog.html',blogs=blogs)
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def newpost():
@@ -119,10 +118,9 @@ def signup():
         user_error= validate_user(user)
         pwd= request.form['password']
         pwd_error= validate_password(pwd)
-        
-        
         verify_pwd=request.form['verify_password']
         verify_pwd_error= verify_passwords(pwd,verify_pwd)
+        
         if not user_error and not verify_pwd_error and not pwd_error:
             
             new_user = User(user,pwd)
